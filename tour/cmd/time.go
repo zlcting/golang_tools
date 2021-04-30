@@ -47,11 +47,11 @@ var calculateTimeCmd = &cobra.Command{
 			_, err1 := strconv.ParseFloat(calculateTime, 64) //判断不是时间戳(纯数字),时间戳格式不变
 
 			if !strings.Contains(calculateTime, " ") && err1 != nil {
-				layout = "2006-01-02"
+				layout = "2006-01-02" //当输入字符串不带时分秒时候 重新定义格式,时间戳不在此判断
 			}
 
 			currentTmer, err = time.Parse(layout, calculateTime)
-
+			//如果输入参数是时间戳则获取该时间戳所代表的时间格式
 			if err != nil {
 				t, _ := strconv.Atoi(calculateTime)
 				currentTmer = time.Unix(int64(t), 0)
