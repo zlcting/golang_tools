@@ -19,4 +19,5 @@ func init() {
 	wordCmd.Flags().StringVarP(&str, "str", "s", "", "请输入单词内容")
 	wordCmd.Flags().Int8VarP(&mode, "mode", "m", 0, "请输入单词转换模式")
 	rootCmd.AddCommand(wordCmd)
+	rootCmd.AddCommand(timeCmd)
 }

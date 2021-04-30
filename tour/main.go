@@ -1,5 +1,6 @@
 package main
 
+// go run main.go word  -s=asdasd -m=1
 import (
 	"log"
 	"tools/tour/cmd"
