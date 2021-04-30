@@ -43,10 +43,15 @@ var calculateTimeCmd = &cobra.Command{
 			currentTmer = timer.GetNowTime()
 		} else {
 			var err error
-			if !strings.Contains(calculateTime, " ") {
+
+			_, err1 := strconv.ParseFloat(calculateTime, 64) //判断不是时间戳(纯数字),时间戳格式不变
+
+			if !strings.Contains(calculateTime, " ") && err1 != nil {
 				layout = "2006-01-02"
 			}
+
 			currentTmer, err = time.Parse(layout, calculateTime)
+
 			if err != nil {
 				t, _ := strconv.Atoi(calculateTime)
 				currentTmer = time.Unix(int64(t), 0)
