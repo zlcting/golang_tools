@@ -20,4 +20,6 @@ func init() {
 	wordCmd.Flags().Int8VarP(&mode, "mode", "m", 0, "请输入单词转换模式")
 	rootCmd.AddCommand(wordCmd)
 	rootCmd.AddCommand(timeCmd)
+
+	rootCmd.AddCommand(readtowriteCmd)
 }

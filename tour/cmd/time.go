@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -32,6 +33,7 @@ var nowTimeCmd = &cobra.Command{
 }
 
 //推算时间
+//ex go run main.go time calc -c="2006-01-02 15:04:05"
 var calculateTimeCmd = &cobra.Command{
 	Use:   "calc",
 	Short: "计算所需时间",
@@ -39,6 +41,7 @@ var calculateTimeCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var currentTmer time.Time
 		var layout = "2006-01-02 15:04:05"
+		fmt.Println(calculateTime)
 		if calculateTime == "" {
 			currentTmer = timer.GetNowTime()
 		} else {
