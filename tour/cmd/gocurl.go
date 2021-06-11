@@ -1,29 +1,26 @@
 package cmd
 
 import (
-	"log"
-	"tools/tour/intertnal/timer"
+	"fmt"
+	"tools/tour/intertnal/gocurl"
 
 	"github.com/spf13/cobra"
 )
 
+var url string
+
 var gocurlCmd = &cobra.Command{
-	Use:   "gocurl",
+	Use:   "curl",
 	Short: "curl请求",
 	Long:  "curl请求",
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("输入url", str)
+		url := "https://restapi.amap.com/v3/config/district?keywords=110108&subdistrict=0&key=2caa5a3c8b92ad1e1c2dcd5437975a01&extensions=all"
+		res, err := gocurl.Get(url)
+		if err == nil {
+			res = res
+		}
 
-	},
-}
-
-//获取当前时间
-var houseLetterCmd = &cobra.Command{
-	Use:   "now",
-	Short: "获取当前时间",
-	Long:  "获取当前时间",
-	Run: func(cmd *cobra.Command, args []string) {
-		nowTime := timer.GetNowTime()
-		log.Printf("当前时间: %s,%d,", nowTime.Format("2006-01-02 15:04:05"), nowTime.Unix())
 	},
 }
 
