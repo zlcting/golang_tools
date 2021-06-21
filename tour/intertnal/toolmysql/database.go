@@ -8,125 +8,126 @@ package toolmysql
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
-type User struct {
-	ID   int64          `db:"id"`
-	Name sql.NullString `db:"name"`
-	Age  int            `db:"age"`
+type Unified_city struct {
+	Id       int64  `db:"id"`
+	Code     int64  `db:"code"`
+	Name     string `db:"name"`
+	Polyline string `db:"polyline"`
+	Level    string `db:"level"`
+	Center   string `db:"center"`
 }
+
+var MysqlDb *sql.DB
+var MysqlDbErr error
+
+// const (
+// 	USER_NAME = "root"
+// 	PASS_WORD = "123"
+// 	NETWORK   = "tcp"
+// 	HOST      = "localhost"
+// 	PORT      = 3306
+// 	DATABASE  = "bishe"
+// 	CHARSET   = "utf8"
+// )
 
 const (
-	USERNAME = "root"
-	PASSWORD = "123"
-	NETWORK  = "tcp"
-	SERVER   = "localhost"
-	PORT     = 3306
-	DATABASE = "bishe"
+	USER_NAME = "loupantest"
+	PASS_WORD = "v0oMrlie7iV=hs"
+	NETWORK   = "tcp"
+	HOST      = "i.yz.mytest.leju.com"
+	PORT      = "63353"
+	DATABASE  = "data_house_sina_com_cn"
+	CHARSET   = "utf8"
 )
 
-func main() {
-	dsn := fmt.Sprintf("%s:%s@%s(%s:%d)/%s", USERNAME, PASSWORD, NETWORK, SERVER, PORT, DATABASE)
-	DB, err := sql.Open("mysql", dsn)
-	if err != nil {
-		fmt.Printf("Open mysql failed,err:%v\n", err)
-		return
+// 初始化链接
+func init() {
+
+	dbDSN := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s", USER_NAME, PASS_WORD, HOST, PORT, DATABASE, CHARSET)
+
+	// 打开连接失败
+	MysqlDb, MysqlDbErr = sql.Open("mysql", dbDSN)
+	//defer MysqlDb.Close();
+	if MysqlDbErr != nil {
+		log.Println("dbDSN: " + dbDSN)
+		panic("数据源配置不正确: " + MysqlDbErr.Error())
 	}
-	DB.SetConnMaxLifetime(100 * time.Second)
-	DB.SetMaxOpenConns(100)
-	DB.SetMaxIdleConns(16)
-	queryOne(DB)
-	queryMulti(DB)
-	insertData(DB)
-	updateData(DB)
-	deleteData(DB)
+
+	// 最大连接数
+	MysqlDb.SetMaxOpenConns(100)
+	// 闲置连接数
+	MysqlDb.SetMaxIdleConns(20)
+	// 最大连接周期
+	MysqlDb.SetConnMaxLifetime(100 * time.Second)
+
+	if MysqlDbErr = MysqlDb.Ping(); nil != MysqlDbErr {
+		panic("数据库链接失败: " + MysqlDbErr.Error())
+	}
+
 }
 
-//查询单行
-func queryOne(DB *sql.DB) {
-	user := new(User)
-	row := DB.QueryRow("select * from users where id=?", 1)
-	if err := row.Scan(&user.ID, &user.Name, &user.Age); err != nil {
+// 查询数据，指定字段名
+func StructQueryField() {
+
+	city := new(Unified_city)
+	row := MysqlDb.QueryRow("select id, name, age from users where id=?", 1)
+	if err := row.Scan(&city.Id, &city.Name, &city.Code); err != nil {
 		fmt.Printf("scan failed, err:%v", err)
 		return
 	}
-	fmt.Println(*user)
+	fmt.Println(city.Id, city.Name, city.Code)
 }
 
-//查询多行
-func queryMulti(DB *sql.DB) {
-	user := new(User)
-	rows, err := DB.Query("select * from users where id > ?", 1)
-	defer func() {
-		if rows != nil {
-			rows.Close()
-		}
-	}()
-	if err != nil {
-		fmt.Printf("Query failed,err:%v", err)
-		return
-	}
+// 查询数据，取所有字段
+func StructQueryAllField() {
+
+	// 通过切片存储
+	citys := make([]Unified_city, 0)
+	rows, _ := MysqlDb.Query("SELECT * FROM `unified_city` limit ?", 100)
+	// 遍历
+	var city Unified_city
 	for rows.Next() {
-		err = rows.Scan(&user.ID, &user.Name, &user.Age)
-		if err != nil {
-			fmt.Printf("Scan failed,err:%v", err)
-			return
-		}
-		fmt.Print(*user)
+		rows.Scan(&city.Id, &city.Name, &city.Code)
+		citys = append(citys, city)
 	}
-
+	fmt.Println(citys)
 }
 
-//插入数据
-func insertData(DB *sql.DB) {
-	result, err := DB.Exec("insert INTO users(name,age) values(?,?)", "YDZ", 23)
-	if err != nil {
-		fmt.Printf("Insert failed,err:%v", err)
-		return
-	}
-	lastInsertID, err := result.LastInsertId()
-	if err != nil {
-		fmt.Printf("Get lastInsertID failed,err:%v", err)
-		return
-	}
+// 插入数据
+func StructInsert() {
+
+	ret, _ := MysqlDb.Exec("insert INTO users(name,age) values(?,?)", "小红", 23)
+
+	//插入数据的主键id
+	lastInsertID, _ := ret.LastInsertId()
 	fmt.Println("LastInsertID:", lastInsertID)
-	rowsaffected, err := result.RowsAffected()
-	if err != nil {
-		fmt.Printf("Get RowsAffected failed,err:%v", err)
-		return
-	}
+
+	//影响行数
+	rowsaffected, _ := ret.RowsAffected()
 	fmt.Println("RowsAffected:", rowsaffected)
+
 }
 
-//更新数据
-func updateData(DB *sql.DB) {
-	result, err := DB.Exec("UPDATE users set age=? where id=?", "30", 3)
-	if err != nil {
-		fmt.Printf("Insert failed,err:%v", err)
-		return
-	}
-	rowsaffected, err := result.RowsAffected()
-	if err != nil {
-		fmt.Printf("Get RowsAffected failed,err:%v", err)
-		return
-	}
-	fmt.Println("RowsAffected:", rowsaffected)
+// 更新数据
+func StructUpdate() {
+
+	ret, _ := MysqlDb.Exec("UPDATE users set age=? where id=?", "100", 1)
+	upd_nums, _ := ret.RowsAffected()
+
+	fmt.Println("RowsAffected:", upd_nums)
 }
 
-//删除数据
-func deleteData(DB *sql.DB) {
-	result, err := DB.Exec("delete from users where id=?", 1)
-	if err != nil {
-		fmt.Printf("Insert failed,err:%v", err)
-		return
-	}
-	rowsaffected, err := result.RowsAffected()
-	if err != nil {
-		fmt.Printf("Get RowsAffected failed,err:%v", err)
-		return
-	}
-	fmt.Println("RowsAffected:", rowsaffected)
+// 删除数据
+func StructDel() {
+
+	ret, _ := MysqlDb.Exec("delete from users where id=?", 1)
+	del_nums, _ := ret.RowsAffected()
+
+	fmt.Println("RowsAffected:", del_nums)
 }
