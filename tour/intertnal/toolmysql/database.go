@@ -85,18 +85,24 @@ func StructQueryField() {
 }
 
 // 查询数据，取所有字段
-func StructQueryAllField() {
+func StructQueryAllField() []Unified_city {
 
 	// 通过切片存储
-	citys := make([]Unified_city, 0)
-	rows, _ := MysqlDb.Query("SELECT * FROM `unified_city` limit ?", 100)
+	citys := make([]Unified_city, 100)
+	rows, _ := MysqlDb.Query("SELECT id,code,name FROM `unified_city` limit ?", 4000)
 	// 遍历
 	var city Unified_city
+	var id int64
+	var code int64
+	var name string
 	for rows.Next() {
-		rows.Scan(&city.Id, &city.Name, &city.Code)
+		rows.Scan(&id, &code, &name)
+		city.Id = id
+		city.Code = code
+		city.Name = name
 		citys = append(citys, city)
 	}
-	fmt.Println(citys)
+	return citys
 }
 
 // 插入数据
@@ -115,9 +121,9 @@ func StructInsert() {
 }
 
 // 更新数据
-func StructUpdate() {
+func StructUpdate(polyline string, center string, level string, code string) {
 
-	ret, _ := MysqlDb.Exec("UPDATE users set age=? where id=?", "100", 1)
+	ret, _ := MysqlDb.Exec("UPDATE unified_city set polyline=?,center=?,level=? where code=?", polyline, center, level, code)
 	upd_nums, _ := ret.RowsAffected()
 
 	fmt.Println("RowsAffected:", upd_nums)

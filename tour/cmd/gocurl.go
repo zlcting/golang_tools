@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
+	"time"
 	"tools/tour/intertnal/gocurl"
 	"tools/tour/intertnal/selfjson"
 	"tools/tour/intertnal/toolmysql"
@@ -32,18 +34,23 @@ var getdistrictCmd = &cobra.Command{
 	Short: "district 获取高德地图行政区坐标 围栏 等级等数据",
 	Long:  "district 获取高德地图行政区坐标 围栏 等级等数据",
 	Run: func(cmd *cobra.Command, args []string) {
-		toolmysql.StructQueryAllField()
+		citys := toolmysql.StructQueryAllField()
+		var url string
+		for _, v := range citys {
+			//fmt.Println(v)
+			url = "https://restapi.amap.com/v3/config/district?keywords=" + strconv.FormatInt(v.Code, 10) + "&subdistrict=0&key=2caa5a3c8b92ad1e1c2dcd5437975a01&extensions=all"
 
-		url := "https://restapi.amap.com/v3/config/district?keywords=110108&subdistrict=0&key=2caa5a3c8b92ad1e1c2dcd5437975a01&extensions=all"
-		res, err := gocurl.Get(url)
-		if err == nil {
-			a := selfjson.Json2struct(res)
-			for k, v := range a.Districts {
-				fmt.Println(k)
-				fmt.Println(v.Adcode)
+			res, err := gocurl.Get(url)
+			if err == nil {
+				a := selfjson.Json2struct(res)
+
+				for _, v := range a.Districts {
+					// fmt.Println(v)
+					toolmysql.StructUpdate(v.Polyline, v.Center, v.Level, v.Adcode)
+				}
 			}
+			time.Sleep(time.Microsecond * 200)
 		}
-
 	},
 }
 
