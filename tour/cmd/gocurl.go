@@ -54,7 +54,37 @@ var getdistrictCmd = &cobra.Command{
 	},
 }
 
+var locationCmd = &cobra.Command{
+	Use:   "location",
+	Short: "location 坐标",
+	Long:  "location 坐标",
+	Run: func(cmd *cobra.Command, args []string) {
+		var url string
+		i := 0
+		for {
+			i++
+			houses := toolmysql.StructHouseflied(i, 1)
+
+			for _, v := range houses {
+
+				url = "https://restapi.amap.com/v3/geocode/regeo?key=c7894840f8de303c5b556d509f395cfb&location=" + v.Coordx2 + "," + v.Coordy2
+				res, err := gocurl.Get(url)
+				if err == nil {
+
+					a := selfjson.Json2Gaodecitybylocation(res)
+					fmt.Println(a)
+				}
+
+			}
+			time.Sleep(time.Microsecond * 200)
+			break
+		}
+	},
+}
+
 //注册子命令
 func init() {
 	gocurlCmd.AddCommand(getdistrictCmd)
+	gocurlCmd.AddCommand(locationCmd)
+
 }
