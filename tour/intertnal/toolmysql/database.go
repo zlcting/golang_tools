@@ -23,6 +23,18 @@ type Unified_city struct {
 	Center   string `db:"center"`
 }
 
+type House_location struct {
+	Id                   int64  `db:"id"`
+	Name                 string `db:"name"`
+	Coordx2              string `db:"coordx2"`
+	Coordy2              string `db:"coordy2"`
+	Value                string `db:"value"`
+	Is_push_tmall        int    `db:"is_push_tmall"`
+	Is_push_lejuflag     int    `db:"is_push_lejuflag"`
+	Unified_city_cn_code string `db:"unified_city_cn_code"`
+	City_cn              string `db:"city_cn"`
+}
+
 var MysqlDb *sql.DB
 var MysqlDbErr error
 
@@ -36,12 +48,22 @@ var MysqlDbErr error
 // 	CHARSET   = "utf8"
 // )
 
+// const (
+// 	USER_NAME = "loupantest"
+// 	PASS_WORD = "v0oMrlie7iV=hs"
+// 	NETWORK   = "tcp"
+// 	HOST      = "i.yz.mytest.leju.com"
+// 	PORT      = "63353"
+// 	DATABASE  = "data_house_sina_com_cn"
+// 	CHARSET   = "utf8"
+// )
+
 const (
-	USER_NAME = "loupantest"
-	PASS_WORD = "v0oMrlie7iV=hs"
+	USER_NAME = "datahouseuser"
+	PASS_WORD = "daTA@user123"
 	NETWORK   = "tcp"
 	HOST      = "i.yz.mytest.leju.com"
-	PORT      = "63353"
+	PORT      = "53353"
 	DATABASE  = "data_house_sina_com_cn"
 	CHARSET   = "utf8"
 )
@@ -126,14 +148,51 @@ func StructUpdate(polyline string, center string, level string, code string) {
 	ret, _ := MysqlDb.Exec("UPDATE unified_city set polyline=?,center=?,level=? where code=?", polyline, center, level, code)
 	upd_nums, _ := ret.RowsAffected()
 
-	fmt.Println("RowsAffected:", upd_nums)
+	fmt.Println("RowsAffected:", code, upd_nums)
 }
 
 // 删除数据
-func StructDel() {
+// func StructDel() {
 
-	ret, _ := MysqlDb.Exec("delete from users where id=?", 1)
-	del_nums, _ := ret.RowsAffected()
+// 	ret, _ := MysqlDb.Exec("delete from users where id=?", 1)
+// 	del_nums, _ := ret.RowsAffected()
 
-	fmt.Println("RowsAffected:", del_nums)
+// 	fmt.Println("RowsAffected:", del_nums)
+// }
+
+//查询坐标和天猫状态
+func StructHouseflied(page int, offset int) []House_location {
+	limit := (page - 1) * offset
+	houses := make([]House_location, offset)
+
+	rows, _ := MysqlDb.Query("SELECT h.id,h.name,h.coordy2,h.coordx2,o.value,e.is_push_lejuflag,e.is_push_tmall,c.unified_city_cn_code,c.city_cn FROM data_house_sina_com_cn.house AS h LEFT JOIN house_extension AS e ON h.id = e.house_id LEFT JOIN house_options AS o ON h.district = o.id AND o.type = 'district' left join city as c on h.site = c.city_en WHERE h.status = 1 LIMIT ? , ?", limit, offset)
+	// 遍历
+	var house House_location
+	var id int64
+	var name string
+	var coordy2 string
+	var coordx2 string
+	var is_push_lejuflag int
+	var is_push_tmall int
+	var unified_city_cn_code string
+	var city_cn string
+	var value string
+	for rows.Next() {
+
+		rows.Scan(&id, &name, &coordy2, &coordx2, &value, &is_push_lejuflag, &is_push_tmall, &unified_city_cn_code, &city_cn)
+
+		house.Id = id
+		house.Name = name
+		house.Coordy2 = coordy2
+		house.Coordx2 = coordx2
+		house.Is_push_lejuflag = is_push_lejuflag
+		house.Is_push_tmall = is_push_tmall
+		house.Unified_city_cn_code = unified_city_cn_code
+		house.City_cn = city_cn
+		house.Value = value
+
+		houses = append(houses, house)
+	}
+
+	return houses
 }
