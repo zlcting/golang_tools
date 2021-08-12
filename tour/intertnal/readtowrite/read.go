@@ -18,7 +18,6 @@ func Readfile(readpath string, ch chan string) error {
 	rd := bufio.NewReader(f)
 	for {
 		line, err := rd.ReadString('\n') //以'\n'为结束符读入一行
-
 		if err != nil || io.EOF == err {
 			break
 		}

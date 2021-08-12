@@ -11,16 +11,16 @@ func Writefile(writepath string, line string) error {
 	var f *os.File
 	var err error
 	if checkFileIsExist(writepath) { //如果文件存在
-		f, err = os.OpenFile(writepath, os.O_APPEND, 0666) //打开文件
+		f, err = os.OpenFile(writepath, os.O_APPEND|os.O_WRONLY, 0666) //打开文件
 		fmt.Println("文件存在")
 	} else {
 		f, err = os.Create(writepath) //创建文件
 		fmt.Println("文件不存在")
 	}
 	fmt.Println(err)
-	io.WriteString(f, line)
-	//fmt.Printf("写入 %d 个字节n", n)
-	//fmt.Println(err)
+	n, err2 := io.WriteString(f, line)
+	fmt.Printf("写入 %d 个字节", n)
+	fmt.Println(err2)
 
 	if err != nil {
 		return err

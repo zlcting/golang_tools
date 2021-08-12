@@ -27,11 +27,12 @@ type Gaodecitybylocation struct {
 	Status    string `json:"status"`
 	Regeocode struct {
 		AddressComponent struct {
-			City         []interface{} `json:"city"`
-			Province     string        `json:"province"`
-			Adcode       string        `json:"adcode"`
-			District     string        `json:"district"`
-			Towncode     string        `json:"towncode"`
+			//City         []interface{} `json:"city"`
+			City         string `json:"city"`
+			Province     string `json:"province"`
+			Adcode       string `json:"adcode"`
+			District     string `json:"district"`
+			Towncode     string `json:"towncode"`
 			StreetNumber struct {
 				Number    string `json:"number"`
 				Location  string `json:"location"`
