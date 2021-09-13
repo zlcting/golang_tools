@@ -6,12 +6,16 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 )
 
 func Get(url string) (string, error) {
 	client := &http.Client{}
-	request, _ := http.NewRequest("GET", url, nil)
-
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		fmt.Println("Fatal error ", err.Error())
+		os.Exit(0)
+	}
 	//接收服务端返回给客户端的信息
 	response, _ := client.Do(request)
 	if response.StatusCode == 200 {
